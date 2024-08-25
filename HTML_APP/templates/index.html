@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Approval Prediction</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #f1f1f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #2e2e2e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+        }
+        .container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #333;
+            color: #f1f1f1;
+            font-size: 1rem;
+        }
+        .form-group input::placeholder {
+            color: #bbb;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4caf50;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        #result .alert {
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #0d7dda;
+            color: #fff;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Loan Approval Prediction</h2>
+        <form id="predictionForm" method="POST" action="/predict">
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender" required>
+                    <option value="0">Female</option>
+                    <option value="1">Male</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="married">Married</label>
+                <select id="married" name="married" required>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="dependents">Dependents</label>
+                <select id="dependents" name="dependents" required>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3+</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="education">Education</label>
+                <select id="education" name="education" required>
+                    <option value="0">Not Graduate</option>
+                    <option value="1">Graduate</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="self_employed">Self Employed</label>
+                <select id="self_employed" name="self_employed" required>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="applicant_income">Applicant Income</label>
+                <input type="number" id="applicant_income" name="applicant_income" placeholder="Enter your income" required>
+            </div>
+            <div class="form-group">
+                <label for="coapplicant_income">Coapplicant Income</label>
+                <input type="number" id="coapplicant_income" name="coapplicant_income" placeholder="Enter coapplicant's income" required>
+            </div>
+            <div class="form-group">
+                <label for="loan_amount">Loan Amount</label>
+                <input type="number" id="loan_amount" name="loan_amount" placeholder="Enter loan amount" required>
+            </div>
+            <div class="form-group">
+                <label for="loan_amount_term">Loan Amount Term (in days)</label>
+                <input type="number" id="loan_amount_term" name="loan_amount_term" placeholder="Enter loan term" required>
+            </div>
+            <div class="form-group">
+                <label for="credit_history">Credit History</label>
+                <select id="credit_history" name="credit_history" required>
+                    <option value="0">Bad</option>
+                    <option value="1">Good</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="property_area">Property Area</label>
+                <select id="property_area" name="property_area" required>
+                    <option value="0">Rural</option>
+                    <option value="1">Semiurban</option>
+                    <option value="2">Urban</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Predict Loan Approval</button>
+        </form>
+        <div id="result">
+            <div class="alert"></div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom script to handle form submission and display result -->
+    <script>
+        $(document).ready(function() {
+            $('#predictionForm').on('submit', function(event) {
+                event.preventDefault();
+
+                $.ajax({
+                    url: '/predict',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#result .alert').text(response.result + ' (Probability: ' + response.probability + ')');
+                        $('#result').show();
+                    },
+                    error: function(xhr) {
+                        $('#result .alert').text('Error: ' + xhr.responseJSON.error);
+                        $('#result').show();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
